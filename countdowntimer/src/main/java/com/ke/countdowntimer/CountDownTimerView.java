@@ -7,7 +7,15 @@ import android.util.AttributeSet;
 
 public class CountDownTimerView extends android.support.v7.widget.AppCompatTextView {
     private CharSequence defaultText;
-    private OnTimeListener mOnTimeListener;
+    private OnTimeListener mOnTimeListener = new OnTimeListener() {
+        @Override
+        public CharSequence getText(long time) {
+            return "重新发送(" + time / 1000 + ")";
+        }
+    };
+
+    private static final long DEFAULT_MILLIS_IN_FUTURE = 60 * 1000;
+    private static final long DEFAULT_INTERVAL = 1000;
 
     private CountDownTimer mCountDownTimer;
 
@@ -34,9 +42,12 @@ public class CountDownTimerView extends android.support.v7.widget.AppCompatTextV
         mOnTimeListener = onTimeListener;
     }
 
+    public void startCountDown() {
+        startCountDown(DEFAULT_MILLIS_IN_FUTURE, DEFAULT_INTERVAL);
+    }
 
 
-    public void startCountDown(long millisInFuture,long countDownInterval) {
+    public void startCountDown(long millisInFuture, long countDownInterval) {
         if (mCountDownTimer == null) {
             mCountDownTimer = new CountDownTimer(millisInFuture, countDownInterval) {
                 @Override
@@ -52,9 +63,9 @@ public class CountDownTimerView extends android.support.v7.widget.AppCompatTextV
                     setText(defaultText);
                 }
             };
-        }else if (isEnabled()){
+        } else if (isEnabled()) {
             //已经初始化完成 并且已经完成倒计时
-        }else {
+        } else {
             //已经完成初始化 但没有完成倒计时
             return;
         }
@@ -62,7 +73,7 @@ public class CountDownTimerView extends android.support.v7.widget.AppCompatTextV
         mCountDownTimer.start();
     }
 
-    public void onDestroy() {
+    private void onDestroy() {
         if (mCountDownTimer != null) {
             mCountDownTimer.cancel();
         }
@@ -78,4 +89,9 @@ public class CountDownTimerView extends android.support.v7.widget.AppCompatTextV
     }
 
 
+    @Override
+    protected void onDetachedFromWindow() {
+        onDestroy();
+        super.onDetachedFromWindow();
+    }
 }
